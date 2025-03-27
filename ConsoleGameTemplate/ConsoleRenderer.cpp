@@ -1,22 +1,28 @@
 #include "ConsoleRenderer.h"
-#include <stdio.h>
 
-namespace ConsoleRenderer
+
+
+
+
+namespace consoleRender
 {
-    HANDLE hConsoleHandle;          // 초기 화면 콘솔의 핸들
+    HANDLE hConsoleHandle;              // 초기 화면 콘솔의 핸들
 
-    int nScreenWidth = 0;           // 콘솔창의 너비
-    int nScreenHeight = 0;          // 콘솔창의 높이
-    int nScreenBufferSize = 0;      // 콘솔창의 스크린버퍼 크기
-    int nScreenBufferIndex = 0;     // 콘솔창이 사용할 스크린버퍼의 인덱스
-	HANDLE hScreenBuffer[2];        // 콘솔창이 사용할 스크린버퍼의 핸들
+    int nScreenWidth = 0;                // 콘솔창의 너비
+    int nScreenHeight = 0;               // 콘솔창의 높이
+    int nScreenBufferSize = 0;           // 콘솔창의 스크린버퍼 크기
+    int nScreenBufferIndex = 0;          // 콘솔창이 사용할 스크린버퍼의 인덱스
 
-    void ScreenInit()
+    HANDLE hScreenBuffer[2];             // 콘솔창이 사용할 스크린버퍼의 핸들
+
+    void ScreenInit() // 피킹 현상 방지 함수 
     {
         // 현재 화면크기에 맞는 화면 콘솔스크린버퍼 2개를 만든다.    
         hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
         hScreenBuffer[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
         hScreenBuffer[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+        // 버퍼 생성 
+
 
         // 기본 콘솔,생성된 콘솔스크린 모두 커서 안보이게 설정
         CONSOLE_CURSOR_INFO cursorInfo = { 0, };
@@ -25,6 +31,8 @@ namespace ConsoleRenderer
         SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
         SetConsoleCursorInfo(hScreenBuffer[0], &cursorInfo);
         SetConsoleCursorInfo(hScreenBuffer[1], &cursorInfo);
+
+
 
         //기본 콘솔의 화면 크기 정보를 얻는다.
         CONSOLE_SCREEN_BUFFER_INFO Info; // 초기 화면 콘솔의 화면 정보
@@ -57,8 +65,32 @@ namespace ConsoleRenderer
         CloseHandle(hScreenBuffer[1]);
     }
 
+    void Buffersinit(int x, int y, char* ch)
+    {
+        if (x >= 0 && x < nScreenWidth && y >= 0 && y < nScreenHeight)
+        {
+            hScreenBuffer[y * nScreenWidth + x] = ch;
+        }
+    }
 
+    HANDLE swapBuffers()
+    {
 
+        HANDLE Buffertemp = hScreenBuffer[0];
+        hScreenBuffer[0] = hScreenBuffer[1];
+        hScreenBuffer[1] = Buffertemp;
+
+        return Buffertemp;
+    }
+
+    void BufferRender(int x, int y)
+    {
+        for (int y = 0; y < nScreenWidth * nScreenHeight; ++y)
+        {
+            std::cout << hScreenBuffer[y * nScreenWidth + x] << " " << std::endl;
+        }
+        
+    }
 
     /*
         FOREGROUND_BLUE	텍스트 색에 파란색이 포함됩니다.
@@ -75,7 +107,7 @@ namespace ConsoleRenderer
         DWORD	dwCharsWritten;
         cdPos.X = x;
         cdPos.Y = y;
-       
+
         bRval = FillConsoleOutputCharacterA(hScreenBuffer[nScreenBufferIndex], ch, 1, cdPos, &dwCharsWritten);
         if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputCharacter()\n");
 
@@ -83,21 +115,23 @@ namespace ConsoleRenderer
         if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
         return bRval;
     }
-	bool ScreenDrawChar(int x, int y, wchar_t ch, WORD attr)
-	{
-		COORD	cdPos;
-		BOOL	bRval = FALSE;
-		DWORD	dwCharsWritten;
-		cdPos.X = x;
-		cdPos.Y = y;
 
-		bRval = FillConsoleOutputCharacterW(hScreenBuffer[nScreenBufferIndex], ch, 1, cdPos, &dwCharsWritten);
-		if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputCharacter()\n");
 
-		bRval = FillConsoleOutputAttribute(hScreenBuffer[nScreenBufferIndex], attr, 1, cdPos, &dwCharsWritten);
-		if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
-		return bRval;
-	}
+    bool ScreenDrawChar(int x, int y, wchar_t ch, WORD attr)
+    {
+        COORD	cdPos;
+        BOOL	bRval = FALSE;
+        DWORD	dwCharsWritten;
+        cdPos.X = x;
+        cdPos.Y = y;
+
+        bRval = FillConsoleOutputCharacterW(hScreenBuffer[nScreenBufferIndex], ch, 1, cdPos, &dwCharsWritten);
+        if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputCharacter()\n");
+
+        bRval = FillConsoleOutputAttribute(hScreenBuffer[nScreenBufferIndex], attr, 1, cdPos, &dwCharsWritten);
+        if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
+        return bRval;
+    }
 
 
     bool ScreenDrawString(int x, int y, const char* pStr, WORD attr)
@@ -109,28 +143,28 @@ namespace ConsoleRenderer
         cdPos.Y = y;
 
         DWORD nNumberOfBytesToWrite = (DWORD)strlen(pStr);
-		//특정 위치에 문자열을 출력한다.
+        //특정 위치에 문자열을 출력한다.
         WriteConsoleOutputCharacterA(hScreenBuffer[nScreenBufferIndex], pStr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
         bRval = FillConsoleOutputAttribute(hScreenBuffer[nScreenBufferIndex], attr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
         if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
         return bRval;
     }
 
-	bool ScreenDrawString(int x, int y, const wchar_t* pStr, WORD attr)
-	{
-		COORD	cdPos;
-		BOOL	bRval = FALSE;
-		DWORD	dwCharsWritten;
-		cdPos.X = x;
-		cdPos.Y = y;
+    bool ScreenDrawString(int x, int y, const wchar_t* pStr, WORD attr)
+    {
+        COORD	cdPos;
+        BOOL	bRval = FALSE;
+        DWORD	dwCharsWritten;
+        cdPos.X = x;
+        cdPos.Y = y;
 
-		DWORD nNumberOfBytesToWrite = (DWORD)wcslen(pStr);
-		//특정 위치에 문자열을 출력한다.
-		WriteConsoleOutputCharacterW(hScreenBuffer[nScreenBufferIndex], pStr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
-		bRval = FillConsoleOutputAttribute(hScreenBuffer[nScreenBufferIndex], attr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
-		if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
-		return bRval;
-	}
+        DWORD nNumberOfBytesToWrite = (DWORD)wcslen(pStr);
+        //특정 위치에 문자열을 출력한다.
+        WriteConsoleOutputCharacterW(hScreenBuffer[nScreenBufferIndex], pStr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
+        bRval = FillConsoleOutputAttribute(hScreenBuffer[nScreenBufferIndex], attr, nNumberOfBytesToWrite, cdPos, &dwCharsWritten);
+        if (bRval == false) OutputDebugStringA("Error, FillConsoleOutputAttribute()\n");
+        return bRval;
+    }
 
     bool ScreenSetAttributes(WORD attr)
     {
@@ -161,6 +195,9 @@ namespace ConsoleRenderer
         return nScreenHeight;
     }
 };
+
+
+
 
 
 

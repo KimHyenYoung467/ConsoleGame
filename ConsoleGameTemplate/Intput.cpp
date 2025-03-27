@@ -23,4 +23,7 @@ namespace Input
     bool IsKeyReleased(int vKey) {
         return ((prevState[vKey] & 0x8000) && !(currState[vKey] & 0x8000));
     }
+
+
+
 }

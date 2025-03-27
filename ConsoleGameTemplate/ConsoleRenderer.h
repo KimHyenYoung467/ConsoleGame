@@ -1,4 +1,5 @@
 #pragma once
+#include "HeaderZiP.h"
 #include <Windows.h>
 
 // Foreground
@@ -47,7 +48,7 @@
 #define BG_GRAY			BACKGROUND_RED|BACKGROUND_GREEN|BACKGROUND_BLUE
 #define BG_WHITE		BG_GRAY|BACKGROUND_INTENSITY
 
-namespace ConsoleRenderer
+namespace consoleRender
 {
 	void ScreenInit();
 	void ScreenRelease();
@@ -61,6 +62,10 @@ namespace ConsoleRenderer
 	bool ScreenDrawString(int x, int y, const wchar_t* pStr, WORD attr);
 	bool ScreenSetAttributes(WORD attr);
 
+	void Buffersinit(int x, int y, char* ch);
+	HANDLE swapBuffers();
+	void BufferRender(int x, int y);
+	 
 	int ScreenWidth();
 	int ScreenHeight();
 };

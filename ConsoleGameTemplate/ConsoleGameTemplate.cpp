@@ -1,80 +1,59 @@
-﻿// ConsoleDoubleBuffering.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
-//
+﻿ //ConsoleDoubleBuffering.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 
-#include <iostream>
-#include <Windows.h>
-#include <conio.h>
-#include "ConsoleRenderer.h"
-#include "Input.h"
-#include "Time.h"
-#include <stdio.h>
+#include "HeaderZiP.h"
 
-bool g_bQuit = false;
-void Update();
-void Render();
-void ProcessInput();
+	
+	bool g_bQuit;	 // 나갔는 지 아닌지 확인하는 변수
+	COORD g_Player;   // 플레이어 위치 
+	
+	System Setting; 
 
-COORD g_Player = { 0,0 };
 
-int main()
-{	
-	ConsoleRenderer::ScreenInit();	
-	Time::InitTime();
-	while (!g_bQuit)
+	int main()
 	{
-		Time::UpdateTime();
-		Input::Update();		
-		Update();
-		Render();
-	};
+		consoleRender::ScreenInit();				// 현재 스크린의 커서 피킹 현상 방지 
+		
+		Setting.SceneCurrent = Setting.SceneType.MENU;
+		
+		Time::InitTime();							// 현재 타이머 시간 초기화 
 
-	ConsoleRenderer::ScreenRelease();
-}
+		while (g_bQuit != true)						// Escape 로 나가지 않았을 때 반복 시킨다. 
+		{
+			Time::UpdateTime();
+			Input::Update();
 
+			Setting.SceneRender();
+			Setting.SceneUpdate();
+			
 
-void ProcessInput()
-{
-	if (Input::IsKeyDown(VK_LEFT)) { //왼쪽
-		g_Player.X--;
+		};
+		
+		consoleRender::ScreenRelease(); // 스크린 버퍼 닫아주기 
 	}
-	if (Input::IsKeyDown(VK_RIGHT)) { //오른쪽
-		g_Player.X++;
-	}
-	if (Input::IsKeyDown(VK_UP)) { //위
-		g_Player.Y--;
-	}
-	if (Input::IsKeyDown(VK_DOWN)) { //아래
-		g_Player.Y++;
-	}
-	if (Input::IsKeyDown(VK_ESCAPE)) { //종료
-		g_bQuit = true;
-	}
+		
+	/*void Update()
+	{
+			
+		if (g_Player.X < 0) g_Player.X = 0;
+		if (g_Player.X >= ConsoleRenderer::ScreenWidth()) g_Player.X = ConsoleRenderer::ScreenWidth() - 1;
+		if (g_Player.Y < 0) g_Player.Y = 0;
+		if (g_Player.Y >= ConsoleRenderer::ScreenHeight()) g_Player.Y = ConsoleRenderer::ScreenHeight() - 1;
+	}*/
 
-}
-
-void Update()
-{
-	ProcessInput();
-
-	if (g_Player.X < 0) g_Player.X = 0;
-	if (g_Player.X >= ConsoleRenderer::ScreenWidth()) g_Player.X = ConsoleRenderer::ScreenWidth() - 1;
-	if (g_Player.Y < 0) g_Player.Y = 0;
-	if (g_Player.Y >= ConsoleRenderer::ScreenHeight()) g_Player.Y = ConsoleRenderer::ScreenHeight() - 1;
-}
-
-void Render()
-{
-	ConsoleRenderer::ScreenClear();
-
-	char buf[256] = { 0, };
-	float time = Time::GetTotalTime();
-	sprintf_s(buf,"프로그램 시작이후의 시간입니다. %f",Time::GetTotalTime());
 	
-	ConsoleRenderer::ScreenDrawString(0, 0, buf, FG_PINK_DARK);
-	ConsoleRenderer::ScreenDrawString(0, 1,L"특수문자는 Wide Character의 출력이 필요합니다.abcd한글🌊🏄‍♂️🚁😀⭠⭡⭢⭣⭦⭧⭨⭩⬤111", FG_PINK_DARK);
-	ConsoleRenderer::ScreenDrawChar(g_Player.X, g_Player.Y, L'A', FG_WHITE);
 	
-	ConsoleRenderer::ScreenFlipping();
-}
-
-
+	
+	/*void Render()
+	{
+		ConsoleRenderer::ScreenClear();
+	
+		char buf[256] = { 0, };
+		float time = Time::GetTotalTime();
+		sprintf_s(buf, "ConsoleRandomGame 시작 이후의 시간: %f", Time::GetTotalTime());
+	
+		ConsoleRenderer::ScreenDrawString(0, 0, buf, FG_PINK_DARK);
+		ConsoleRenderer::ScreenDrawString(0, 1, L"ConsoleRandomGame", FG_PINK_DARK);
+		ConsoleRenderer::ScreenDrawChar(g_Player.X, g_Player.Y, L'A', FG_WHITE);
+	
+		ConsoleRenderer::ScreenFlipping();
+	}*/

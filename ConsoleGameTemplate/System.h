@@ -1,30 +1,31 @@
 #pragma once
-#include <Windows.h>
-#include "Input.h"
-#include "Time.h"
-#include "ConsoleRenderer.h"
-#include "PLAY.h"
-#include "System.h"
-#include <stdio.h>
-#include "ConsoleGameTemplate.cpp"
+#include "HeaderZiP.h"
 
 
-namespace GManager
+
+struct System
 {
-	enum struct SceneType { MENU, PLAY, END };
+	
 
-	COORD S_Player = { 0, }; // 플레이어 위치를 지정 
+	enum SceneType { MENU, PLAY, END }; // 씬 타입 
 
-	SceneType SceneCurrent;		// 현재 씬 
-	SceneType* SceneNext;	    // 다음 씬 
-	bool isRunning;
+	System::SceneType SceneCurrent;					// 현재 씬 
+	System::SceneType* NextScene = nullptr;			// 다음 씬 
 
-	SHORT prevState = 0;
-	void Initialize(); 
+	void SceneInit();
 
-	void ChangeScene(SceneType newScene); // 상황(입력 또는 시간 변경) 에 따라 SceneNext 설정 
-	void Update();						  // 
-	void Render();						  // 콘솔창에 텍스트로 그리기 
-	bool IsRunning() { return isRunning; };
+	void ChangeScene(SceneType newScene);					     // 상황(입력 또는 시간 변경) 에 따라 SceneNext 설정 
+	void SceneUpdate();
+	void SceneRender();											 // 콘솔창에 텍스트로 그리기 
+	void ProcessInput();
+	SceneType NextChangeIndex(SceneType scenecurrent);
 
-}
+	//bool IsRunning() { return isRunning; };					 // 게임이 진행 중인지 아닌지 확인하는 변수를 반환한다.
+
+	SceneType GetSceneType(SceneType scene) { return scene = SceneCurrent; }; // 현재 씬을 가져온다.
+	SceneType SetSceneType(SceneType scene) { return scene = SceneCurrent; }; // 현재 씬을 지정한다. 
+
+
+};
+
+
